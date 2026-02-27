@@ -1,3 +1,4 @@
+mod git;
 mod state;
 mod types;
 
