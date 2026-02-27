@@ -4,45 +4,22 @@
   import { onMount } from 'svelte';
   import RefSelector from '$lib/RefSelector.svelte';
   import DiffViewer from '$lib/DiffViewer.svelte';
+  import FileHeader from '$lib/FileHeader.svelte';
   import CommentBox from '$lib/CommentBox.svelte';
   import QueueStatus from '$lib/QueueStatus.svelte';
   import { initTheme, setTheme, getPreference } from '$lib/theme.svelte';
+  import { isViewed, toggleViewed, reconcile, viewedCount } from '$lib/viewed.svelte';
+  import type { RefInfo, DiffResult, DiffFile } from '$lib/types';
 
   onMount(() => initTheme());
-
-  type RefInfo = { name: string; refType: string };
-  type DiffResult = {
-    baseRef: string;
-    compareRef: string;
-    files: DiffFile[];
-  };
-  type DiffFile = {
-    path: string;
-    status: string;
-    oldPath: string | null;
-    hunks: DiffHunk[];
-  };
-  type DiffHunk = {
-    oldStart: number;
-    oldLines: number;
-    newStart: number;
-    newLines: number;
-    lines: DiffLine[];
-  };
-  type DiffLine = {
-    lineType: string;
-    content: string;
-    oldNum: number | null;
-    newNum: number | null;
-  };
 
   let refs = $state<RefInfo[]>([]);
   let baseRef = $state('');
   let compareRef = $state('');
   let diff = $state<DiffResult | null>(null);
-  let selectedFile = $state<DiffFile | null>(null);
   let repoPath = $state('');
   let viewMode = $state<'split' | 'unified'>('split');
+  let collapseOverrides = $state<Record<string, boolean>>({});
 
   // Line selection state for comment box
   let selectionFile = $state('');
@@ -72,13 +49,35 @@
   async function loadDiff() {
     if (!baseRef || !compareRef) return;
     diff = await invoke<DiffResult>('get_diff', { base: baseRef, compare: compareRef });
-    if (diff && diff.files.length > 0) {
-      selectedFile = diff.files[0];
-    }
+  }
+
+  function scrollToFile(path: string) {
+    document.getElementById('file-' + path)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function isCollapsed(file: DiffFile): boolean {
+    if (file.path in collapseOverrides) return collapseOverrides[file.path];
+    return isViewed(file);
+  }
+
+  function toggleCollapse(file: DiffFile) {
+    collapseOverrides[file.path] = !isCollapsed(file);
+  }
+
+  function handleToggleViewed(file: DiffFile) {
+    toggleViewed(file);
+    delete collapseOverrides[file.path];
   }
 
   $effect(() => {
     if (baseRef && compareRef) loadDiff();
+  });
+
+  $effect(() => {
+    if (diff) {
+      reconcile(diff.files);
+      collapseOverrides = {};
+    }
   });
 </script>
 
@@ -106,28 +105,40 @@
   <div class="workspace">
     {#if diff}
       <aside class="file-tree">
+        <div class="viewed-progress">
+          {viewedCount(diff.files).viewed} / {viewedCount(diff.files).total} viewed
+        </div>
         {#each diff.files as file}
           <button
             class="file-entry"
-            class:active={selectedFile === file}
-            onclick={() => selectedFile = file}
+            class:viewed={isViewed(file)}
+            onclick={() => scrollToFile(file.path)}
           >
             <span class="status-badge {file.status}">{file.status[0].toUpperCase()}</span>
-            {file.path}
+            {#if isViewed(file)}<span class="viewed-check">✓</span>{/if}
+            <span class="file-name">{file.path}</span>
           </button>
         {/each}
       </aside>
 
       <section class="diff-pane">
-        {#if selectedFile}
-          <DiffViewer
-            file={selectedFile}
-            {viewMode}
-            onLineSelect={handleLineSelect}
-          />
-        {:else}
-          <p class="empty">Select a file to view diff</p>
-        {/if}
+        {#each diff.files as file}
+          <div id="file-{file.path}" class="file-section">
+            <FileHeader
+              {file}
+              collapsed={isCollapsed(file)}
+              onToggleCollapse={() => toggleCollapse(file)}
+              onToggleViewed={() => handleToggleViewed(file)}
+            />
+            {#if !isCollapsed(file)}
+              <DiffViewer
+                {file}
+                {viewMode}
+                onLineSelect={handleLineSelect}
+              />
+            {/if}
+          </div>
+        {/each}
       </section>
     {:else}
       <p class="empty">Open a repo and select two refs to compare.</p>
@@ -184,6 +195,8 @@
     --queue-pending-text: #d29922;
     --queue-pending-bg: #d2992215;
     --shadow: rgba(0, 0, 0, 0.5);
+    --viewed-check: #3fb950;
+    --viewed-opacity: 0.5;
   }
   :global([data-theme="light"]) {
     --bg-primary: #ffffff;
@@ -222,6 +235,8 @@
     --queue-pending-text: #9a6700;
     --queue-pending-bg: #d2992225;
     --shadow: rgba(0, 0, 0, 0.15);
+    --viewed-check: #1a7f37;
+    --viewed-opacity: 0.5;
   }
   :global(body) {
     margin: 0;
@@ -274,8 +289,15 @@
     width: 250px;
     border-right: 1px solid var(--border);
     overflow-y: auto;
-    padding: 4px 0;
+    padding: 0;
     background: var(--bg-secondary);
+    flex-shrink: 0;
+  }
+  .viewed-progress {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
   }
   .file-entry {
     display: flex;
@@ -291,7 +313,17 @@
     text-align: left;
   }
   .file-entry:hover { background: var(--bg-hover); }
-  .file-entry.active { background: var(--bg-active); color: var(--text-white); }
+  .file-entry.viewed { opacity: var(--viewed-opacity); }
+  .file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .viewed-check {
+    color: var(--viewed-check);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
   .status-badge {
     font-size: 11px;
     font-weight: 700;
@@ -301,6 +333,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 3px;
+    flex-shrink: 0;
   }
   :global(.status-badge.added) { background: var(--added-badge-bg); color: var(--added-badge-text); }
   :global(.status-badge.modified) { background: var(--modified-badge-bg); color: var(--modified-badge-text); }
@@ -308,16 +341,13 @@
   .diff-pane {
     flex: 1;
     overflow: auto;
-    padding: 16px;
+  }
+  .file-section {
+    border-bottom: 1px solid var(--border);
   }
   .empty {
     color: var(--text-muted);
     text-align: center;
     margin-top: 40px;
-  }
-  h3 {
-    margin: 0 0 12px;
-    font-size: 14px;
-    color: var(--text-secondary);
   }
 </style>
