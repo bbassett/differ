@@ -12,6 +12,7 @@ pub fn run() {
     let queue_for_mcp = app_state.comment_queue.clone();
 
     tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
             commands::open_repo,
