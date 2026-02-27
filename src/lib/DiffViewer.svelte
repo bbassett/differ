@@ -1,15 +1,5 @@
 <script lang="ts">
-  type DiffFile = {
-    path: string;
-    status: string;
-    hunks: {
-      oldStart: number;
-      oldLines: number;
-      newStart: number;
-      newLines: number;
-      lines: { lineType: string; content: string; oldNum: number | null; newNum: number | null }[];
-    }[];
-  };
+  import type { DiffFile } from './types';
 
   let { file, viewMode = 'split', onLineSelect = () => {} }: {
     file: DiffFile;
