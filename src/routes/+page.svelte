@@ -4,6 +4,7 @@
   import RefSelector from '$lib/RefSelector.svelte';
   import DiffViewer from '$lib/DiffViewer.svelte';
   import CommentBox from '$lib/CommentBox.svelte';
+  import QueueStatus from '$lib/QueueStatus.svelte';
 
   type RefInfo = { name: string; refType: string };
   type DiffResult = {
@@ -83,6 +84,7 @@
     {#if repoPath}
       <span class="repo-path">{repoPath}</span>
     {/if}
+    <QueueStatus />
     <button onclick={() => viewMode = viewMode === 'split' ? 'unified' : 'split'}>
       {viewMode === 'split' ? 'Unified' : 'Split'}
     </button>
