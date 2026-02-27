@@ -20,6 +20,7 @@
   let repoPath = $state('');
   let viewMode = $state<'split' | 'unified'>('split');
   let collapseOverrides = $state<Record<string, boolean>>({});
+  let diffPane: HTMLElement | undefined = $state();
 
   // Line selection state for comment box
   let selectionFile = $state('');
@@ -69,6 +70,27 @@
     delete collapseOverrides[file.path];
   }
 
+  function getCurrentFile(): DiffFile | null {
+    if (!diffPane || !diff) return null;
+    const paneTop = diffPane.getBoundingClientRect().top;
+    let current: DiffFile | null = null;
+    for (const file of diff.files) {
+      const el = document.getElementById('file-' + file.path);
+      if (el && el.getBoundingClientRect().top <= paneTop + 1) {
+        current = file;
+      }
+    }
+    return current ?? diff.files[0] ?? null;
+  }
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || showCommentBox) return;
+    const file = getCurrentFile();
+    if (file && !isViewed(file)) {
+      handleToggleViewed(file);
+    }
+  }
+
   $effect(() => {
     if (baseRef && compareRef) loadDiff();
   });
@@ -80,6 +102,8 @@
     }
   });
 </script>
+
+<svelte:window onkeydown={handleKeydown} />
 
 <main>
   <header>
@@ -121,7 +145,7 @@
         {/each}
       </aside>
 
-      <section class="diff-pane">
+      <section class="diff-pane" bind:this={diffPane}>
         {#each diff.files as file}
           <div id="file-{file.path}" class="file-section">
             <FileHeader
