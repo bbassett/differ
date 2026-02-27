@@ -3,6 +3,7 @@
   import { open } from '@tauri-apps/plugin-dialog';
   import RefSelector from '$lib/RefSelector.svelte';
   import DiffViewer from '$lib/DiffViewer.svelte';
+  import CommentBox from '$lib/CommentBox.svelte';
 
   type RefInfo = { name: string; refType: string };
   type DiffResult = {
@@ -121,6 +122,17 @@
       <p class="empty">Open a repo and select two refs to compare.</p>
     {/if}
   </div>
+
+  {#if showCommentBox}
+    <CommentBox
+      file={selectionFile}
+      startLine={selectionStart}
+      endLine={selectionEnd}
+      codeContext={selectionContext}
+      onSubmit={() => { showCommentBox = false; }}
+      onCancel={() => { showCommentBox = false; }}
+    />
+  {/if}
 </main>
 
 <style>
