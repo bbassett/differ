@@ -6,7 +6,7 @@
   import DiffViewer from '$lib/DiffViewer.svelte';
   import CommentBox from '$lib/CommentBox.svelte';
   import QueueStatus from '$lib/QueueStatus.svelte';
-  import { initTheme, toggleTheme, getTheme } from '$lib/theme.svelte';
+  import { initTheme, setTheme, getPreference } from '$lib/theme.svelte';
 
   onMount(() => initTheme());
 
@@ -92,9 +92,11 @@
     <button onclick={() => viewMode = viewMode === 'split' ? 'unified' : 'split'}>
       {viewMode === 'split' ? 'Unified' : 'Split'}
     </button>
-    <button onclick={toggleTheme}>
-      {getTheme() === 'dark' ? 'Light' : 'Dark'}
-    </button>
+    <select value={getPreference()} onchange={(e) => setTheme(e.currentTarget.value as 'light' | 'dark' | 'system')}>
+      <option value="system">System</option>
+      <option value="light">Light</option>
+      <option value="dark">Dark</option>
+    </select>
     <div class="ref-selectors">
       <RefSelector {refs} bind:selected={baseRef} label="Base" />
       <RefSelector {refs} bind:selected={compareRef} label="Compare" />

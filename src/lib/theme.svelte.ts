@@ -1,11 +1,19 @@
 type Theme = 'light' | 'dark';
+type ThemePreference = 'light' | 'dark' | 'system';
 
-let current = $state<Theme>(getInitialTheme());
+let preference = $state<ThemePreference>(getInitialPreference());
+let systemTheme = $state<Theme>(getSystemTheme());
+let resolved = $derived<Theme>(preference === 'system' ? systemTheme : preference);
 
-function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark';
+function getInitialPreference(): ThemePreference {
+  if (typeof window === 'undefined') return 'system';
   const saved = localStorage.getItem('theme');
-  if (saved === 'light' || saved === 'dark') return saved;
+  if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
+  return 'system';
+}
+
+function getSystemTheme(): Theme {
+  if (typeof window === 'undefined') return 'dark';
   return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
 }
 
@@ -15,21 +23,23 @@ function applyTheme(theme: Theme) {
 }
 
 export function initTheme() {
-  applyTheme(current);
+  applyTheme(resolved);
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-      current = e.matches ? 'light' : 'dark';
-      applyTheme(current);
-    }
+    systemTheme = e.matches ? 'light' : 'dark';
+    applyTheme(resolved);
   });
 }
 
-export function toggleTheme() {
-  current = current === 'dark' ? 'light' : 'dark';
-  localStorage.setItem('theme', current);
-  applyTheme(current);
+export function setTheme(pref: ThemePreference) {
+  preference = pref;
+  localStorage.setItem('theme', pref);
+  applyTheme(resolved);
 }
 
 export function getTheme(): Theme {
-  return current;
+  return resolved;
+}
+
+export function getPreference(): ThemePreference {
+  return preference;
 }
