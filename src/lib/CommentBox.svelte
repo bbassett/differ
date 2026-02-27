@@ -72,10 +72,10 @@
     bottom: 16px;
     right: 16px;
     width: 400px;
-    background: #2a2a2a;
-    border: 1px solid #555;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 24px var(--shadow);
     z-index: 100;
   }
   .comment-header {
@@ -83,41 +83,41 @@
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--border-light);
   }
   .comment-location {
     font-family: monospace;
     font-size: 12px;
-    color: #79b8ff;
+    color: var(--hunk-text);
   }
   .close-btn {
     background: none;
     border: none;
-    color: #888;
+    color: var(--text-dimmed);
     cursor: pointer;
     font-size: 14px;
     padding: 0 4px;
   }
-  .close-btn:hover { color: #fff; }
+  .close-btn:hover { color: var(--text-white); }
   .code-preview {
     max-height: 80px;
     overflow: auto;
     padding: 8px 12px;
-    background: #1e1e1e;
-    border-bottom: 1px solid #444;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-light);
   }
   .code-preview pre {
     margin: 0;
     font-size: 11px;
     font-family: 'SF Mono', 'Fira Code', monospace;
-    color: #aaa;
+    color: var(--text-secondary);
     white-space: pre;
   }
   textarea {
     width: 100%;
     box-sizing: border-box;
-    background: #1e1e1e;
-    color: #e0e0e0;
+    background: var(--bg-input);
+    color: var(--text-primary);
     border: none;
     padding: 12px;
     font-size: 13px;
@@ -125,27 +125,27 @@
     resize: vertical;
   }
   textarea:focus { outline: none; }
-  textarea::placeholder { color: #666; }
+  textarea::placeholder { color: var(--text-muted); }
   .comment-actions {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    border-top: 1px solid #444;
+    border-top: 1px solid var(--border-light);
   }
   .hint {
     font-size: 11px;
-    color: #666;
+    color: var(--text-muted);
   }
   .comment-actions button {
-    background: #347d39;
-    color: #fff;
+    background: var(--submit-bg);
+    color: var(--text-white);
     border: none;
     border-radius: 4px;
     padding: 4px 16px;
     font-size: 13px;
     cursor: pointer;
   }
-  .comment-actions button:hover { background: #3e8e41; }
+  .comment-actions button:hover { background: var(--submit-hover); }
   .comment-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

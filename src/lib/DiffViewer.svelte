@@ -146,12 +146,12 @@
 
 <style>
   .hunk-header {
-    background: #1e3a5f;
-    color: #79b8ff;
+    background: var(--hunk-bg);
+    color: var(--hunk-text);
     padding: 4px 12px;
     font-size: 12px;
     font-family: monospace;
-    border-top: 1px solid #333;
+    border-top: 1px solid var(--border);
   }
   .hunk-content-split {
     display: flex;
@@ -160,28 +160,28 @@
     flex: 1;
     overflow-x: auto;
   }
-  .old-side { border-right: 1px solid #333; }
+  .old-side { border-right: 1px solid var(--border); }
   .line {
     display: flex;
     font-family: 'SF Mono', 'Fira Code', monospace;
     font-size: 13px;
     line-height: 20px;
   }
-  .line.add { background: #12261e; }
-  .line.delete { background: #2d1517; }
-  .line.context { background: #1a1a1a; }
-  .line.filler { background: #1a1a1a; opacity: 0.5; }
-  .line.selected { background: #264f78 !important; }
+  .line.add { background: var(--diff-add-bg); }
+  .line.delete { background: var(--diff-delete-bg); }
+  .line.context { background: var(--diff-context-bg); }
+  .line.filler { background: var(--diff-context-bg); opacity: 0.5; }
+  .line.selected { background: var(--selected-bg) !important; }
   .line-num {
     min-width: 40px;
     padding: 0 8px;
     text-align: right;
-    color: #555;
+    color: var(--line-num);
     user-select: none;
     cursor: pointer;
     flex-shrink: 0;
   }
-  .line-num:hover { color: #aaa; background: #333; }
+  .line-num:hover { color: var(--line-num-hover); background: var(--bg-active); }
   .line-content {
     flex: 1;
     padding: 0 8px;
@@ -191,11 +191,11 @@
     width: 16px;
     text-align: center;
     flex-shrink: 0;
-    color: #666;
+    color: var(--text-muted);
   }
   .diff-unified .line-num {
     min-width: 35px;
   }
   .diff-unified .line-num.old { border-right: none; }
-  .diff-unified .line-num.new { border-right: 1px solid #333; }
+  .diff-unified .line-num.new { border-right: 1px solid var(--border); }
 </style>

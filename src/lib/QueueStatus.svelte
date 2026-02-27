@@ -34,13 +34,13 @@
 <style>
   .queue-status {
     font-size: 12px;
-    color: #666;
+    color: var(--text-muted);
     padding: 4px 8px;
     border-radius: 4px;
-    background: #2a2a2a;
+    background: var(--bg-hover);
   }
   .queue-status.has-items {
-    color: #d29922;
-    background: #d2992215;
+    color: var(--queue-pending-text);
+    background: var(--queue-pending-bg);
   }
 </style>

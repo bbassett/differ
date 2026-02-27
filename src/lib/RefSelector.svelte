@@ -30,12 +30,12 @@
   label {
     font-weight: 600;
     font-size: 13px;
-    color: #aaa;
+    color: var(--text-secondary);
   }
   select {
-    background: #2a2a2a;
-    color: #e0e0e0;
-    border: 1px solid #444;
+    background: var(--bg-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
     border-radius: 4px;
     padding: 4px 8px;
     font-size: 13px;
