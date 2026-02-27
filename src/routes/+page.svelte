@@ -2,6 +2,7 @@
   import { invoke } from '@tauri-apps/api/core';
   import { open } from '@tauri-apps/plugin-dialog';
   import RefSelector from '$lib/RefSelector.svelte';
+  import DiffViewer from '$lib/DiffViewer.svelte';
 
   type RefInfo = { name: string; refType: string };
   type DiffResult = {
@@ -35,6 +36,22 @@
   let diff = $state<DiffResult | null>(null);
   let selectedFile = $state<DiffFile | null>(null);
   let repoPath = $state('');
+  let viewMode = $state<'split' | 'unified'>('split');
+
+  // Line selection state for comment box
+  let selectionFile = $state('');
+  let selectionStart = $state(0);
+  let selectionEnd = $state(0);
+  let selectionContext = $state('');
+  let showCommentBox = $state(false);
+
+  function handleLineSelect(file: string, startLine: number, endLine: number, codeContext: string) {
+    selectionFile = file;
+    selectionStart = startLine;
+    selectionEnd = endLine;
+    selectionContext = codeContext;
+    showCommentBox = true;
+  }
 
   async function openRepo() {
     const selected = await open({ directory: true });
@@ -65,6 +82,9 @@
     {#if repoPath}
       <span class="repo-path">{repoPath}</span>
     {/if}
+    <button onclick={() => viewMode = viewMode === 'split' ? 'unified' : 'split'}>
+      {viewMode === 'split' ? 'Unified' : 'Split'}
+    </button>
     <div class="ref-selectors">
       <RefSelector {refs} bind:selected={baseRef} label="Base" />
       <RefSelector {refs} bind:selected={compareRef} label="Compare" />
@@ -88,8 +108,11 @@
 
       <section class="diff-pane">
         {#if selectedFile}
-          <h3>{selectedFile.path}</h3>
-          <p>Diff viewer goes here (Task 8)</p>
+          <DiffViewer
+            file={selectedFile}
+            {viewMode}
+            onLineSelect={handleLineSelect}
+          />
         {:else}
           <p class="empty">Select a file to view diff</p>
         {/if}
