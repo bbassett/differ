@@ -70,25 +70,28 @@
     delete collapseOverrides[file.path];
   }
 
-  function getCurrentFile(): DiffFile | null {
+  function getNextUnviewedFile(): DiffFile | null {
     if (!diffPane || !diff) return null;
     const paneTop = diffPane.getBoundingClientRect().top;
-    let current: DiffFile | null = null;
-    for (const file of diff.files) {
-      const el = document.getElementById('file-' + file.path);
+    let topIdx = 0;
+    for (let i = 0; i < diff.files.length; i++) {
+      const el = document.getElementById('file-' + diff.files[i].path);
       if (el && el.getBoundingClientRect().top <= paneTop + 1) {
-        current = file;
+        topIdx = i;
       }
     }
-    return current ?? diff.files[0] ?? null;
+    // Return topmost file if unviewed, otherwise first unviewed after it
+    if (!isViewed(diff.files[topIdx])) return diff.files[topIdx];
+    for (let i = topIdx + 1; i < diff.files.length; i++) {
+      if (!isViewed(diff.files[i])) return diff.files[i];
+    }
+    return null;
   }
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key !== 'Escape' || showCommentBox) return;
-    const file = getCurrentFile();
-    if (file && !isViewed(file)) {
-      handleToggleViewed(file);
-    }
+    const file = getNextUnviewedFile();
+    if (file) handleToggleViewed(file);
   }
 
   $effect(() => {
